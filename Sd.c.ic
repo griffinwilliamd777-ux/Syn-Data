@@ -1,0 +1,182 @@
+synthdata/
+├── README.md
+├── pyproject.toml
+├── synthetic.example.toml
+├── LICENSE
+├── .gitignore
+
+├── synthdata/
+│   ├── __init__.py
+│   ├── __main__.py              # CLI entrypoint
+│   │
+│   ├── cli/                     # Command-line interface
+│   │   ├── __init__.py
+│   │   ├── init.py              # synthdata init
+│   │   ├── validate.py          # synthdata validate
+│   │   ├── run.py               # synthdata run
+│   │   ├── verify.py            # synthdata verify
+│   │   └── utils.py
+│   │
+│   ├── core/                    # Immutable core engine
+│   │   ├── __init__.py
+│   │   ├── compiler.py          # TOML → execution DAG
+│   │   ├── schema.py            # Entity + field definitions
+│   │   ├── constraints.py       # Rules, dependencies, integrity
+│   │   ├── distributions.py     # Random + statistical models
+│   │   ├── seeds.py             # Deterministic seed hierarchy
+│   │   ├── engine.py            # Orchestration + execution
+│   │   ├── hashing.py           # Dataset fingerprints
+│   │   └── exceptions.py
+│   │
+│   ├── generators/              # Pluggable generators
+│   │   ├── __init__.py
+│   │   ├── numeric.py
+│   │   ├── text.py
+│   │   ├── time.py
+│   │   ├── geo.py
+│   │   └── categorical.py
+│   │
+│   ├── writers/                 # Output formats
+│   │   ├── __init__.py
+│   │   ├── csv.py
+│   │   ├── json.py
+│   │   ├── parquet.py
+│   │   └── sql.py
+│   │
+│   ├── plugins/                 # Optional extensions
+│   │   ├── __init__.py
+│   │   ├── registry.py
+│   │   └── base.py
+│   │
+│   ├── verify/                  # Integrity + reproducibility
+│   │   ├── __init__.py
+│   │   ├── manifest.py
+│   │   └── replay.py
+│   │
+│   └── utils/
+│       ├── __init__.py
+│       ├── logging.py
+│       └── parallel.py
+│
+├── tests/
+│   ├── test_compiler.py
+│   ├── test_constraints.py
+│   ├── test_engine.py
+│   └── test_reproducibility.py
+│
+└── examples/
+
+
+    ├── finance.toml
+    ├── healthcare.toml
+    └── iot.toml
+
+[project]
+name = "synthdata"
+version = "0.1.0"
+description = "Deterministic synthetic raw data engine"
+requires-python = ">=3.10"
+
+dependencies = [
+  "typer",
+  "tomli",
+  "pydantic",
+  "rich"
+]
+
+[project.scripts]
+synthdata = "synthdata.__main__:app"
+
+import typer
+from synthdata.cli import init, validate, run, verify
+
+app = typer.Typer(help="SynthData – Synthetic Raw Data Engine")
+
+app.command()(init.command)
+app.command()(validate.command)
+app.command()(run.command)
+app.command()(verify.command)
+
+if __name__ == "__main__":
+    app()from pathlib import Path
+import typer
+
+command = typer.Typer()
+
+@command.command()
+def init(path: str = "synthetic.toml"):
+    file = Path(path)
+    if file.exists():
+        typer.echo("synthetic.toml already exists")
+        raise typer.Exit(1)
+
+    file.write_text("""
+[dataset]
+name = "example"
+rows = 1000
+seed = 42
+
+[[entity]]
+name = "users"
+
+[[entity.field]]
+name = "id"
+type = "int"
+""".strip())
+
+    typer.echo(f"Initialized {path}")import tomli
+import typer
+
+command = typer.Typer()
+
+@command.command()
+def validate(file: str = "synthetic.toml"):
+    try:
+        with open(file, "rb") as f:
+            tomli.load(f)
+        typer.echo("Schema valid")
+    except Exception as e:
+        typer.echo(f"Validation failed: {e}")
+        raise typer.Exit(1)import typer
+from synthdata.core.engine import run_engine
+
+command = typer.Typer()
+
+@command.command()
+def run(file: str = "synthetic.toml"):
+    run_engine(file)import typer
+
+command = typer.Typer()
+
+@command.command()
+def verify():
+    typer.echo("Verification coming soon")import tomli
+from synthdata.core.seeds import seed_rng
+from synthdata.core.hashing import fingerprint
+
+def run_engine(file: str):
+    with open(file, "rb") as f:
+        config = tomli.load(f)
+
+    seed = config["dataset"].get("seed", 0)
+    seed_rng(seed)
+
+    rows = config["dataset"]["rows"]
+    print(f"Generating {rows} rows (seed={seed})")
+
+    data = [{"row": i} for i in range(rows)]
+    print("Fingerprint:", fingerprint(data))import random
+
+def seed_rng(seed: int):
+    random.seed(seed)import hashlib
+import json
+
+def fingerprint(data) -> str:
+    blob = json.dumps(data, sort_keys=True).encode()
+    return hashlib.sha256(blob).hexdigest()[dataset]
+name = "demo"
+rows = 10
+seed = 123pip install -e .
+synthdata init
+synthdata validate
+synthdata run
