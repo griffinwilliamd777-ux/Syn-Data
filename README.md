@@ -1,4 +1,4 @@
-Signal Factory is a modular, production-ready pipeline for generating, analyzing, pricing, and distributing market signals. It integrates AI-driven Overseer logic, Human Intelligence Amplification (HIA), and a central Vault for storage, auditing, and distribution. The system is fully deployable on Railway, scalable, and secure.
+vitalogy 3025 is a modular, production-ready pipeline for generating, analyzing, pricing, and distributing market signals. It integrates AI-driven Overseer logic, Human Intelligence Amplification (HIA), and a central Vault for storage, auditing, and distribution. The system is fully deployable on Railway, scalable, and secure.
 Table of Contents
 Features
 Architecture
@@ -58,8 +58,8 @@ Installation
 Copy code
 Bash
 # Clone the repository
-git clone https://github.com/<your-username>/signal-factory.git
-cd signal-factory
+git clone https://github.com/<your-username>/signal-vitalogy3025.git
+cd vitalogy3025
 
 # Install dependencies for each service
 cd services/intake_api && pip install -r requirements.txt
@@ -97,4 +97,4 @@ Seed mock signals to validate flow
 Verify elite signal human override
 License
 Proprietary / Private (recommended for your system)
-All rights reserved by Griffin Vitalogy
+All rights reserved by Vitalogy
